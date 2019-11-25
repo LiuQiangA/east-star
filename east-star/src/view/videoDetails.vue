@@ -112,10 +112,14 @@ export default {
       $(".plyr--video .plyr__controls").css("padding","20px 50px 5px 20px")
 
       // 一下代码只是用来发起请求，以便于iOS监听，做交互（UIwebview）,iOS全屏时候强制横屏
-      var a = document.createElement('a');
-      a.target = "myIframe";
-      a.href = "https://www.baidu.com";
-      a.click();
+      var u = navigator.userAgent;
+      var isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+      if(isIOS){
+        var a = document.createElement('a');
+        a.target = "myIframe";
+        a.href = "https://www.baidu.com";
+        a.click();
+      }
     },
     goNative() {
       const vm = this;
