@@ -21,7 +21,6 @@
               @deleteShare="deleteShare"
             ></shareList>
             <div v-if="empty" class="no-data">
-              <!-- <img src="../../assets/images/noData.png" /> -->
               <p>暂无内容</p>
             </div>
             <div class="noMore" v-if="isEnd">没有更多啦~</div>
@@ -39,7 +38,6 @@
         :class="{'commitCont':true,'showInput':showInput}"
       ></commit>
       <div class="commit-shadow" v-show="showInput" @click="showInput = false"></div>
-      <!-- <div :class="{'shadow':showInput}" v-if="showInput"></div> -->
       <!-- 删除评论 -->
       <div class="delPop" :class="{'on':showDelPop}" @click="showDelPop = false">
         <div class="delPop-cont" :class="{'on':showDelPop}">
@@ -113,19 +111,9 @@ export default {
   mounted() {
     const vm = this;
     this.$bridge.registerhandler("refresh1", (data, responseCallback) => {
-      // vm.native_data = data;
-      console.log("1");
-      console.log("Ls");
-      console.log(Ls);
-      console.log("data");
-      console.log(data);
-      console.log(typeof data);
       Ls.setItem("userId", JSON.parse(data).userId);
       Ls.setItem("auth", JSON.parse(data).auth);
-      vm.initLogin();
-      // vm.initScroll();
-      console.log("vm.isLogin");
-      console.log(vm.isLogin);
+      vm.init();
       vm.isLogin = true;
     });
     this.$bridge.callhandler("hiteBtn", { hiteBtn: "false" }, data => {
@@ -133,50 +121,39 @@ export default {
       // 处理返回数据
     });
     this.initScroll();
-    // this.getShareList();
   },
   beforeRouteEnter(to, from, next) {
     next(vm => {
       if (to.meta.keepAlive == true) {
         vm.keepAlive = true;
-
-        // store.commit('recordScroll', document.documentElement.scrollTop || document.body.scrollTop); // document.body.scrollTop一定要加不然iOS上会失效，本人亲测，踩坑
       }
       if (from.meta.keepAlive == true) {
         vm.keepAlive = true;
         vm.myScroll.scrollTo(0, vm.scrtop);
-        console.log("999");
       }
-      if(from.name == 'communionDet'){
-        // console.log("from")
-        // console.log(from.name)
-        if(Ls.getItem("isInit") !== '0'){
-          vm.init();
-        }
-        // vm.init();
-      }
+
     });
   },
   beforeRouteLeave(to, from, next) {
-    // ...
     this.keepAlive = false;
     next();
   },
   activated() {
     let that = this;
-    // this.initScroll()
     this.scrollHeight();
-    console.log("activated");
-    console.log(this.scrtop);
-    // this.myScroll = new this.$BScroll(this.$refs.wrapper, this.options);
     this.myScroll.refresh(); // dom节点变化，重新计算better-scroll
     this.myScroll.scrollTo(0, that.scrtop);
     this.myGlobal.setScroll(this.myScroll);
+    console.log('activated')
+    console.log(Ls.getItem("isInit"))
+    if(Ls.getItem("isInit") !== '0'){
+      Ls.setItem("isInit",0)
+      that.init();
+    }
   },
   methods: {
     // 删除问答
     deleteShare(item,index) {
-      console.log(this.newList[index].shareId)
       MessageBox.confirm("确定执行此操作?").then(action => {
         this.$fetch
           .setDelShare({
@@ -191,25 +168,6 @@ export default {
               duration: 1500
             });
           });
-        // this.$fetch
-        //   .setDelShare({
-        //     shareId: id
-        //   })
-        //   .then(res => {
-        //     // Toast({
-        //     //   message: "操作成功",
-        //     //   duration: 1500
-        //     // });
-        //     // setTimeout(() => {
-        //       this.init();
-        //     // }, 1500);
-        //   })
-        //   .catch(err => {
-        //     Toast({
-        //       message: "操作失败",
-        //       duration: 1500
-        //     });
-        //   });
       });
     },
     // 初始化scroll
@@ -253,36 +211,10 @@ export default {
       const that = this;
       this.myScroll.on("scroll", pos => {
         if (that.keepAlive) {
-          // console.log(pos.x + "~" + pos.y);
-          // store.commit("recordScroll", pos.y);
           this.scrtop = pos.y;
         }
       });
     },
-    // 处理横图竖图
-    // whImg(item,img,index,arr) {
-    //   return new Promise((resolve, reject)=>{
-    //     img.onload = function() {
-    //       // 打印
-    //       console.log(
-    //         "width:" + img.width + ",height:" + img.height,
-    //         "index" + index
-    //       );
-    //       console.log(img.width, img.height);
-    //       if (img.width > img.height) {
-    //         arr[index].imgW = true;
-    //         arr[index].imgH = false;
-    //         resolve(arr)
-    //       } else {
-    //         arr[index].imgW = false;
-    //         arr[index].imgH = true;
-    //         resolve(arr)
-    //       }
-    //       arr[index].b = 1;
-    //       console.log(item, "9");
-    //     };
-    //   })
-    // },
     // init
     initLogin() {
       this.option.pageNo = 1;
@@ -298,16 +230,7 @@ export default {
               // 后台图片的src
               img.src = item.pictures[0];
               if (item.pictures.length == 1) {
-                // this.whImg(item,img,index,arr).then(resp=>{
-                //   this.newList = resp;
-                // })
                 img.onload = function() {
-                  // 打印
-                  console.log(
-                    "width:" + img.width + ",height:" + img.height,
-                    "index" + index
-                  );
-                  console.log(img.width, img.height);
                   if (img.width > img.height) {
                     arr[index].imgW = true;
                     arr[index].imgH = false;
@@ -316,7 +239,6 @@ export default {
                     arr[index].imgH = true;
                   }
                   arr[index].b = 1;
-                  console.log(item, "9");
                 };
               } else {
                 arr[index].a = 1;
@@ -327,13 +249,11 @@ export default {
               this.total = res.data.total;
               this.totalPage = this.total / 10;
               this.finishPulling();
-              // this.initScroll();
             }, 1500);
             this.initScroll();
           });
         })
         .catch(err => {
-          console.log(err);
           if (err.response.state == "False") {
             this.isLogin = false;
           }
@@ -353,16 +273,7 @@ export default {
               // 后台图片的src
               img.src = item.pictures[0];
               if (item.pictures.length == 1) {
-                // this.whImg(item,img,index,arr).then(resp=>{
-                //   this.newList = resp;
-                // })
                 img.onload = function() {
-                  // 打印
-                  console.log(
-                    "width:" + img.width + ",height:" + img.height,
-                    "index" + index
-                  );
-                  console.log(img.width, img.height);
                   if (img.width > img.height) {
                     arr[index].imgW = true;
                     arr[index].imgH = false;
@@ -371,7 +282,6 @@ export default {
                     arr[index].imgH = true;
                   }
                   arr[index].b = 1;
-                  console.log(item, "9");
                 };
               } else {
                 arr[index].a = 1;
@@ -382,13 +292,10 @@ export default {
               this.total = res.data.total;
               this.totalPage = this.total / 10;
               this.finishPulling();
-              // this.initScroll();
             }, 1500);
-            // this.initScroll();
           });
         })
         .catch(err => {
-          console.log(err);
           if (err.response.state == "False") {
             this.isLogin = false;
           }
@@ -405,15 +312,8 @@ export default {
               let img = new Image();
               // 后台图片的src
               img.src = item.pictures[0];
-              // if(item.pictures.length>1) return false;
               if (item.pictures.length == 1) {
                 img.onload = function() {
-                  // 打印
-                  console.log(
-                    "width:" + img.width + ",height:" + img.height,
-                    "index" + index
-                  );
-                  console.log(img.width, img.height);
                   if (img.width > img.height) {
                     arr[index].imgW = true;
                     arr[index].imgH = false;
@@ -422,7 +322,6 @@ export default {
                     arr[index].imgH = true;
                   }
                   arr[index].b = 1;
-                  console.log(item, "9");
                 };
               } else {
                 arr[index].a = 1;
@@ -437,14 +336,12 @@ export default {
           });
         })
         .catch(err => {
-          console.log(err);
           if (err.response.state == "False") {
             this.isLogin = false;
           }
         });
     },
     praise(shareId, starState) {
-      console.log(shareId, starState);
       this.shareId = shareId;
       this.zan = !this.zan;
       if (starState) {
@@ -466,13 +363,6 @@ export default {
         .catch(err => {});
     }
   }
-  // destroyed() {
-  //   // Ls.removeItem("list");
-  //   // Ls.removeItem("index");
-  //   // 是否点赞，true 进行调用setStar 否则不进行任何操作
-  //   if(!this.zan) return
-  //   this.setStar()
-  // },
 };
 </script> 
 <style scoped lang='less'>

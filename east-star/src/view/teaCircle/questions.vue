@@ -129,14 +129,14 @@ export default {
     const vm = this;
     this.$bridge.registerhandler("refresh2", (data, responseCallback) => {
       // vm.native_data = data;
-      console.log("2");
-      console.log("Ls");
-      console.log(Ls);
-      console.log("data");
-      console.log(JSON.parse(data));
+      // console.log("2");
+      // console.log("Ls");
+      // console.log(Ls);
+      // console.log("data");
+      // console.log(JSON.parse(data));
       Ls.setItem("userId", JSON.parse(data).userId);
       Ls.setItem("auth", JSON.parse(data).auth);
-      vm.initLogin();
+      vm.init();
       // vm.initScroll();
       vm.isLogin = true;
     });
@@ -314,6 +314,11 @@ export default {
         this.$fetch
           .setPostComment(this.commitOption)
           .then(res => {
+            console.log(res)
+            if(res.data.state == 2){
+              Toast(res.data.error);
+              return false;
+            }
             setTimeout(() => {
               this.showInput = false;
               this.commitOption.comment = "";
@@ -334,6 +339,7 @@ export default {
             //   });
           })
           .catch(err => {
+            alert("9")
             // 根据state判断是否是教研员身份,3代表非教研员
             if (err.data.state == 3) {
               Toast("非教研员不可以进行此操作哦！");

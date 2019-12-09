@@ -40,7 +40,7 @@ export default function fetch(options) {
       url: `${options.baseURL}${options.url}`,
       data: options.params
     }).then(res => {
-      console.log("suc")
+      // console.log("suc")
       // console.log(res)
       if (res.data.response.state === "True") {
         resolve(res.data)
@@ -71,7 +71,7 @@ export default function fetch(options) {
         reject(res.data)
       }
     }).catch(error => {
-      console.log("err")
+      // console.log("err")
       // console.log(error)
       Indicator.close();
       Toast({

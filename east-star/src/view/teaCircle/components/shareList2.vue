@@ -126,10 +126,21 @@ export default {
       this.$emit("deleteShare", id);
     },
     goDet(id,imgW,imgH) {
-      this.$router.push({
-        path: "/teaCircle/questionsDet",
-        query: { id: id, imgW: imgW, imgH: imgH }
+      id += '';
+      let w = imgW ? '"true"':'"false"';
+      let h = imgH ? '"true"':'"false"';
+      console.log("imgW为："+ imgW)
+      console.log("imgH为："+ imgH)
+      console.log(typeof w)
+      console.log(typeof h)
+      this.$bridge.callhandler("questionsDet", {id: id, imgW: w, imgH: h}, data => {
+        // vm.ddd = data;
+        // 处理返回数据
       });
+      // this.$router.push({
+      //   path: "/teaCircle/questionsDet",
+      //   query: { id: id, imgW: imgW, imgH: imgH }
+      // });
     },
     getId(id) {
       return "my" + id;

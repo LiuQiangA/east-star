@@ -12,7 +12,7 @@ export default {
     this.$fetch
       .getCourseUserInfo()
       .then(res => {
-        console.log(res);
+        // console.log(res);
         if(res.data.role.roleName =='总部教研员' || res.data.role.roleName =='地区教研员'){
           Ls.setItem('showHF',true)
         } else {

@@ -1,100 +1,85 @@
 <template>
   <div class="system-shareList">
     <div class="content">
-      <div :id="getId(item.shareId)" class="system-communion_box van-hairline--bottom" v-for="(item,index) in data" :key="item.shareId" @click="goDet(item.shareId,item.imgW,item.imgH)">
+      <div class="system-communion_box van-hairline--bottom" v-for="(item,index) in datas" :key="item.id" :id="getId(item.id)" @click="goDet(item.id,item.imgW,item.imgH)">
         <div class="communion_box_left">
           <div>
             <img
               v-if="item.user"
               :src="item.user.userImage || '../../../assets/images/default.png'"
               :onerror="defaultHeadImg"
-            />
+            >
             <img
               v-else
               src="../../../assets/images/default.png"
-            />
+            >
           </div>
         </div>
 
         <div class="communion_box_right">
-          
           <div class="first" v-if="item.user">
+            <!-- <div>{{item.userId == LSuserId?"我":item.user.userName}}</div> -->
             <div class="first" v-if="item.user">{{item.user.userName}}</div>
-            <p><span class="time">{{item.updatedAt}}</span> <span class="my-delete" v-if="LSuserId == item.userId" @click.stop="deleteShare(item,index)">删除</span></p>
+            <p><span class="time">{{item.updatedAt}}</span> <span class="my-delete" v-if="LSuserId == item.userId" @click.stop="deleteShare(item.id)">删除</span></p>
           </div>
           <div class="second">{{item.content}}</div>
-          <div
-            class="third"
-            :class="{'flex-imgW': item.imgW, 'flex-imgH': item.imgH}"
-            v-if="item.pictures"
-          >
+          <div class="third" :class="{'flex-imgW': item.imgW, 'flex-imgH': item.imgH}" v-if="item.pictures">
             <div
               @click.stop="previewBtn(item,index)"
               v-for="(imgSrc,index) in item.pictures"
               :key="index"
             >
               <img :src="imgSrc"/>
+              <!-- <img v-if="item.imgW || item.imgH" :src="imgSrc+'?imageMogr2/thumbnail/!67px'" />
+              <img v-else :src="imgSrc+'?imageMogr2/thumbnail/!75p&imageMogr2/gravity/Center/crop/300x300'"> -->
             </div>
           </div>
 
           <div class="fourth">
-            <div>
-              <div class="fourth_message" @click.stop="messageBtn(item,index, '#my'+item.shareId)">
-                <div>
-                  <i class="iconfont icon-liuyan"></i>
-                </div>
-                <div>{{item.commentNum || '0'}}</div>
-              </div>
-              <div
-                v-if="item.userId != LSuserId"
-                class="fourth_praise"
-                @click.stop="praiseBtn(item)"
-              >
-                <div>
-                  <img
-                    v-if="item.starState"
-                    src="../../../assets/images/zan_+icon@2x(1).png"
-                    alt="赞"
-                  />
-                  <img v-else src="../../../assets/images/zan_icon@2x.png" alt="赞" />
-                </div>
-                <div>{{item.stars || '0'}}</div>
-              </div>
-              <div v-else class="fourth_praise" @click.stop="zanList(item,3)">
-                <div>
-                  <img
-                    v-if="item.starState"
-                    src="../../../assets/images/zan_+icon@2x(1).png"
-                    alt="赞"
-                  />
-                  <img v-else src="../../../assets/images/zan_icon@2x.png" alt="赞" />
-                </div>
-                <div>{{item.stars || '0'}}</div>
-              </div>
-            </div>
+            <div class="fourth_time">{{item.area}}</div>
+            
+            <div v-if="showHF == 'true'" class="fourth_message" :class="{'on':true}" @click.stop="messageBtn(item,index,'#my'+item.id)">回复</div>
           </div>
           <!-- 评论 -->
-          <div class="fifth" style="margin-top:10px" v-if="item.list.length" @click.stop="getIndex(index)">
-            <moreCom @commit="commit" :id="item.shareId" :list="item.list" :LSuserId="LSuserId"></moreCom>
+          <div class="system-moreCom" v-if="item.list.length" @click.stop="getIndex(index)">
+            <div class="moreCom_up"></div>
+
+            <div class="moreCom_text" :class="{'on':item.list.length>5}">
+              <template v-for="(i,index) in item.list">
+                <div :id="'my'+index" v-if="!i.parentId" @click.stop="commit(i,index,i.answerId)">
+                  <span>{{i.answerUserName}}：</span>
+                  {{i.answerContent}}
+                </div>
+                <div :id="'my'+index" v-else @click="commit(i,index,i.answerId)">
+                  <span>{{i.answerUserName}}</span>回复
+                  <span>{{i.touserName}}：</span>
+                  {{i.answerContent}}
+                </div>
+              </template>
+            </div>
+
+            <div class="more_text_box" v-if="item.list.length>5">
+              <div @click="moreBtn(item.id)">查看更多评论</div>
+            </div>
           </div>
+          <!-- 评论  end-->
+          <!-- 评论 -->
+          <!-- <div class="fifth" v-if="item.list.length">
+            <moreCom :list="item.list"></moreCom>
+          </div>-->
         </div>
       </div>
     </div>
   </div>
 </template>
 <script>
-// import store from "@/store";
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex'
 import moreCom from "./moreCom";
 import Ls from "@/config/storage";
-// textarea 自适应高度
-import { autoTextarea } from "@/config/dom";
-// 解决iOS 12.x.x 以上 关闭软键盘页面不回弹底部空白问题的问题
-import { iOS } from "@/config/ios";
 export default {
   name: "shareList",
   props: {
-    data: {
+    datas: {
       type: Array,
       default: []
     },
@@ -107,74 +92,65 @@ export default {
     return {
       isShare: true,
       starState: false,
-      showText: false,
-      LSuserId: "",
-      imgW: false,
-      imgH: false,
-      dataList: [],
+      showHF: '',
       defaultHeadImg: 'this.src="'+ require('../../../assets/images/default.png') +'"'
     };
   },
   watch: {
     data: {
       handler(newValue, oldValue) {
+        console.log("newValue");
+        console.log(newValue);
       },
       deep: true
     }
   },
-  computed: {
-    ...mapGetters(["doneGet"])
-  },
+  // computed: {
+  //   ...mapGetters(['doneGet'])
+  // },
   created() {
     // 获取userId
     this.LSuserId = Ls.getItem("userId");
+    this.showHF = Ls.getItem('showHF');
+    this.isShare = false;
+    if (this.$route.query.share) {
+      this.isShare = true;
+    }
   },
   components: {
     moreCom
   },
-  mounted() {
-    // textarea 自适应高度
-    setTimeout(() => {
-      let test = document.querySelectorAll("textarea");
-      for (let i = 0; i < test.length; i++) {
-        autoTextarea(test[i]);
-      }
-    }, 500);
-    // 解决iOS 12.x.x 以上 关闭软键盘页面不回弹底部空白问题的问题
-    iOS();
-  },
   methods: {
     // 删除分享
-    deleteShare(item,index) {
-      this.$emit("deleteShare", item, index);
+    deleteShare(id) {
+      this.$emit("deleteShare", id);
     },
-    zanList(item, type) {
+    goDet(id,imgW,imgH) {
       this.$router.push({
-        path: "/teaCircle/zan",
-        query: { id: item.shareId, shareType: type }
+        path: "/teaCircle/questionsDet",
+        query: { id: id, imgW: imgW, imgH: imgH }
       });
     },
     getId(id) {
       return "my" + id;
     },
-    goDet(id, imgW, imgH) {
-      id += '';
-      let w = imgW ? '"true"':'"false"';
-      let h = imgH ? '"true"':'"false"';
-      this.$bridge.callhandler("communionDet", {id: id, imgW: w, imgH: h}, data => {
-        // vm.ddd = data;
-        // 处理返回数据
-      });
+    moreBtn(e) {
+      let id =document.getElementById("my"+e);
+      $(id).find(".moreCom_text").removeClass("on");
+      $(id).find(".more_text_box").addClass("on")
+      console.log(1212);
     },
     // 获取index
     getIndex(index) {
-      this.$emit("getIndex", index);
+      this.$emit('getIndex',index)
     },
     // 传递评论信息
-    commit(item, index, id) {
-      this.$emit("commit", item, index, id);
+    commit(item,index,id) {
+      this.$emit('commit',item,index,id)
+      // 用于评论时候键盘弹起页面定位
+      Ls.setItem("elementId","#my"+index)
     },
-    messageBtn(item, index, id) {
+    messageBtn(item,index,id) {
       this.$emit("message", item, index, id);
     },
     praiseBtn(item) {
@@ -188,6 +164,10 @@ export default {
       }
     },
     previewBtn(imgSrc, index) {
+      console.log(imgSrc);
+      console.log(index);
+      // Ls.setItem("list",imgSrc.pictures)
+      // Ls.setItem("index",index)
       this.$store.commit("changePre");
       this.$store.commit("changeIndex", index);
       this.$store.commit("changeList", imgSrc.pictures);
@@ -221,40 +201,6 @@ export default {
 .system-shareList {
   height: 100%;
   overflow: hidden;
-  background: #fff;
-  .comment-cont {
-    width: 100%;
-    height: 100%;
-    background: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: -1;
-    &.show {
-      z-index: 999;
-    }
-    .comment-d {
-      width: 100%;
-      position: absolute;
-      top: 300px;
-      left: 0;
-      border: 1px solid #cecece;
-      box-sizing: border-box;
-      padding: 6px 0;
-      border-radius: 5px;
-      background: #fff;
-    }
-    .comment-ipt {
-      width: 100%;
-      padding: 0 10px;
-      box-sizing: border-box;
-      resize: none;
-      outline: none;
-      overflow: hidden;
-      border: 0;
-      display: block;
-    }
-  }
 }
 .system-communion_box {
   display: flex;
@@ -320,9 +266,54 @@ export default {
       }
     }
 
+    .system-moreCom {
+      background: #f0f0f0;
+      position: relative;
+      border-radius: 0.15625rem;
+      padding: 0.625rem;
+      margin-top: 15px;
+      .moreCom_up {
+        position: absolute;
+        top: -0.625rem;
+        left: 0.625rem;
+        width: 0;
+        height: 0;
+        border-left: 0.46875rem solid transparent;
+        border-right: 0.46875rem solid transparent;
+        border-bottom: 0.625rem solid #f0f0f0;
+      }
+
+      .moreCom_text {
+        font-size: 0.9375rem;
+        color: #31445a;
+        &.on {
+          height: 160px;
+          overflow: hidden;
+        }
+        & > div {
+          width: 100%;
+          word-break: break-all;
+          margin: 15px 0;
+        }
+        span {
+          color: #0081ff;
+        }
+      }
+      .more_text_box {
+        height: 2.5625rem;
+        line-height: 2.5625rem;
+        color: #88c750;
+        font-size: 0.75rem;
+        text-align: center;
+        &.on{
+          display: none;
+        }
+      }
+    }
+
     .fourth {
-      height: 20px;
-      line-height: 20px;
+      // height: 2.8125rem;
+      // line-height: 2.8125rem;
       overflow: hidden;
       color: #c1c1c1;
       .fourth_time {
@@ -330,7 +321,6 @@ export default {
         font-size: 0.75rem;
       }
       .fourth_praise {
-        // width: 18px;
         float: right;
         font-size: 0.75rem;
         margin-right: 1.9875rem;
@@ -338,13 +328,13 @@ export default {
           font-size: 20px;
           color: #c1c1c1;
           &.on {
-            color: #db2809;
+            color: #0081ff;
           }
         }
         img {
           height: 1.125rem;
           width: 1.125rem;
-          // margin-top: 0.78125rem;
+          margin-top: 0.78125rem;
         }
         & > div {
           float: left;

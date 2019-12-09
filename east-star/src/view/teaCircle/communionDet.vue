@@ -1,12 +1,12 @@
 <template>
   <div class="system-layout" ref="wrapper">
-    <div class="top" id="top">
+    <!-- <div class="top" id="top">
         <i class="iconfont icon-fanhui" @click="back"></i>
         分享详情
         <span class="share">
           <i class="iconfont icon-gengduo"></i>
         </span>
-      </div>
+      </div> -->
     <div class="content">
       
       <div class="system-communion_box">
@@ -34,7 +34,7 @@
             v-if="shareDetail.user"
           >{{shareDetail.user.userName}}</div>
           <div class="second">{{shareDetail.content}}</div>
-          <div class="third" :class="{'flex-imgW': imgW, 'flex-imgH': imgH}">
+          <div class="third" :class="{'flex-imgW': imgW == 'true', 'flex-imgH': imgH == 'true'}">
             <div
               @click="previewBtn(shareDetail.pictures,index)"
               v-for="(imgSrc,index) in shareDetail.pictures"
@@ -148,21 +148,24 @@ export default {
     //   // vm.ddd = data;
     //   // 处理返回数据
     // });
-    this.$bridge.callhandler("hiteHead", { hiteBtn: "true" }, data => {
-      // vm.ddd = data;
-      // 处理返回数据 
-    });
+    // this.$bridge.callhandler("hiteHead", { hiteBtn: "true" }, data => {
+    //   // vm.ddd = data;
+    //   // 处理返回数据 
+    // });
     // 判断是否有操作 0 否 1 是
     Ls.setItem("isInit",'0');
+    this.$bridge.registerhandler("canRefresh", (data, responseCallback) => {
+      console.log("是否刷新"+Ls.getItem("isInit"))
+      responseCallback({ canRefresh: Ls.getItem("isInit") });
+    });
   },
   mounted() {
     // this.myScroll = new this.$BScroll(this.$refs.wrapper, {
     //   click: true
     // });
     setTimeout(() => {
-      this.imgW = this.$route.query.imgW;
-      this.imgH = this.$route.query.imgH;
-      console.log(this.imgW, this.imgH);
+      this.imgW = eval(this.$route.query.imgW.toLowerCase());
+      this.imgH = eval(this.$route.query.imgH.toLowerCase());
     }, 400);
   },
   methods: {
@@ -470,7 +473,7 @@ export default {
   padding: 1.25rem 15px;
   box-sizing: border-box;
   display: flex;
-  margin-top: 50px;
+  // margin-top: 50px;
   // border-bottom: 1px solid #e1e4e9;
   .communion_box_left {
     & > div {

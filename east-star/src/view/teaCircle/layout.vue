@@ -1,13 +1,13 @@
 <template>
   <div class='system-teaCircle'>
 
-    <div class='top' id="top" v-if="$route.meta.tab">
+    <!-- <div class='top' id="top" v-if="$route.meta.tab">
       <div class="border-bottom">
         <router-link class="list" to="/teaCircle/consult" @click.native='tab(0)'><span>教研资讯</span> <div class='img'></div></router-link>
         <router-link class="list" to="/teaCircle/communion?share=1" @click.native='tab(1)'><span>分享交流</span> <div class='img'></div></router-link>
         <router-link class="list" to="/teaCircle/questions?quest=1" @click.native='tab(2)'><span>教研问答</span> <div class='img'></div></router-link>
       </div>
-    </div>
+    </div> -->
 
     <div class='bottom'>
       <keep-alive>
@@ -64,7 +64,7 @@ export default {
       let vm = this;
       Ls.setItem("nav",index);
       // this.$router.push({ path: this.tab_data[index].path });
-      console.log("aa")
+      // console.log("aa")
       this.tab_data.forEach(da => (da.fal = false));
       this.tab_data[index].fal = true;
       // 调用native 传参
@@ -74,7 +74,7 @@ export default {
         },
         data => {
           // vm.ddd = data;
-          console.log(data)
+          // console.log(data)
         }
       );
     }

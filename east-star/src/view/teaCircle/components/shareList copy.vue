@@ -1,7 +1,13 @@
 <template>
   <div class="system-shareList">
     <div class="content">
-      <div :id="getId(item.shareId)" class="system-communion_box van-hairline--bottom" v-for="(item,index) in data" :key="item.shareId" @click="goDet(item.shareId,item.imgW,item.imgH)">
+      <div
+        :id="getId(item.shareId)"
+        class="system-communion_box van-hairline--bottom"
+        v-for="(item,index) in data"
+        :key="item.shareId"
+        @click="goDet(item.shareId,item.imgW,item.imgH)"
+      >
         <div class="communion_box_left">
           <div>
             <img
@@ -15,29 +21,44 @@
             />
           </div>
         </div>
-
         <div class="communion_box_right">
-          
+          <router-link
+            v-if="isShare"
+            :to="{path:'/teaCircle/communionDet',query: {id: item.shareId}}"
+            tag="div"
+          >
           <div class="first" v-if="item.user">
+            <!-- <div>{{item.userId == LSuserId?"我":item.user.userName}}</div> -->
             <div class="first" v-if="item.user">{{item.user.userName}}</div>
             <p><span class="time">{{item.updatedAt}}</span> <span class="my-delete" v-if="LSuserId == item.userId" @click.stop="deleteShare(item,index)">删除</span></p>
           </div>
-          <div class="second">{{item.content}}</div>
+            <div class="second">{{item.content}}</div>
+          </router-link>
+          <router-link v-else :to="{path:'/teaCircle/questionsDet',query: {id: item.id}}" tag="div">
+            <!-- <div class="first" v-if="item.user">{{item.userId == LSuserId?"我":item.user.userName}}</div> -->
+            <div class="first" v-if="item.user">{{item.user.userName}}</div>
+            <div class="second">{{item.content}}</div>
+          </router-link>
           <div
             class="third"
             :class="{'flex-imgW': item.imgW, 'flex-imgH': item.imgH}"
             v-if="item.pictures"
           >
+            <!-- <p>item.imgW: {{item.imgW}}</p>
+            <p>item.imgH: {{item.imgH}}</p>-->
             <div
               @click.stop="previewBtn(item,index)"
               v-for="(imgSrc,index) in item.pictures"
               :key="index"
             >
               <img :src="imgSrc"/>
+              <!-- <img v-if="item.imgW || item.imgH" :src="imgSrc+'?imageMogr2/thumbnail/!67px'" />
+              <img v-else :src="imgSrc+'?imageMogr2/thumbnail/!75p&imageMogr2/gravity/Center/crop/300x300'"> -->
             </div>
           </div>
 
           <div class="fourth">
+            <!-- <div class="fourth_time">{{item.updatedAt}}</div> -->
             <div>
               <div class="fourth_message" @click.stop="messageBtn(item,index, '#my'+item.shareId)">
                 <div>
@@ -51,6 +72,7 @@
                 @click.stop="praiseBtn(item)"
               >
                 <div>
+                  <!-- <i class="iconfont icon-dianzan" :class="{'on':item.starState}"></i> -->
                   <img
                     v-if="item.starState"
                     src="../../../assets/images/zan_+icon@2x(1).png"
@@ -62,6 +84,7 @@
               </div>
               <div v-else class="fourth_praise" @click.stop="zanList(item,3)">
                 <div>
+                  <!-- <i class="iconfont icon-dianzan" :class="{'on':item.starState}"></i> -->
                   <img
                     v-if="item.starState"
                     src="../../../assets/images/zan_+icon@2x(1).png"
@@ -80,6 +103,12 @@
         </div>
       </div>
     </div>
+    <!-- 评论 -->
+    <!-- <div class="comment-cont" :class="{'show': showText}">
+      <div class="comment-d">
+        <textarea @blur="showText = false" autofocus id="texta" class="comment-ipt" rows="1" placeholder="评论" maxlength="200"></textarea>
+      </div>
+    </div>-->
   </div>
 </template>
 <script>
@@ -118,6 +147,8 @@ export default {
   watch: {
     data: {
       handler(newValue, oldValue) {
+        console.log("newValue");
+        console.log(newValue);
       },
       deep: true
     }
@@ -158,12 +189,9 @@ export default {
       return "my" + id;
     },
     goDet(id, imgW, imgH) {
-      id += '';
-      let w = imgW ? '"true"':'"false"';
-      let h = imgH ? '"true"':'"false"';
-      this.$bridge.callhandler("communionDet", {id: id, imgW: w, imgH: h}, data => {
-        // vm.ddd = data;
-        // 处理返回数据
+      this.$router.push({
+        path: "/teaCircle/communionDet",
+        query: { id: id, imgW: imgW, imgH: imgH }
       });
     },
     // 获取index
@@ -188,6 +216,10 @@ export default {
       }
     },
     previewBtn(imgSrc, index) {
+      console.log(imgSrc);
+      console.log(index);
+      // Ls.setItem("list",imgSrc.pictures)
+      // Ls.setItem("index",index)
       this.$store.commit("changePre");
       this.$store.commit("changeIndex", index);
       this.$store.commit("changeList", imgSrc.pictures);

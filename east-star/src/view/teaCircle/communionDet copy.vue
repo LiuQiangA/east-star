@@ -1,79 +1,90 @@
 <template>
   <div class="system-layout" ref="wrapper">
-    <!-- <div class="top" id="top">
-      <i class="iconfont icon-fanhui" @click="back"></i>
-      问答详情
-      <span class="share">
-        <i class="iconfont icon-gengduo"></i>
-      </span>
-    </div> -->
+    <div class="top" id="top">
+        <i class="iconfont icon-fanhui" @click="back"></i>
+        分享详情
+        <span class="share">
+          <i class="iconfont icon-gengduo"></i>
+        </span>
+      </div>
     <div class="content">
-      <div class="system-communion_box" v-if="questionDetail.id">
+      
+      <div class="system-communion_box">
         <div class="communion_box_left">
           <div>
             <img
-              :src="questionDetail.user.userImage||'../../assets/images/default.png'"
+              v-if="shareDetail.user"
+              :src="shareDetail.user.userImage || '../../assets/images/default.png'"
               :onerror="defaultHeadImg"
             />
+            <!-- <img
+              v-else
+              src="../../assets/images/default.png"
+            />-->
           </div>
         </div>
 
         <div class="communion_box_right">
-          <div class="first">
-            <!-- <div>{{questionDetail.userId == LSuserId?"我":questionDetail.user.userName}}</div> -->
-            <div>{{questionDetail.user.userName}}</div>
-            <p>
-              <span class="time">{{questionDetail.updatedAt}}</span>
-              <span
-                class="my-delete"
-                v-if="LSuserId == questionDetail.userId"
-                @click="setDelQuestion(questionDetail.id)"
-              >删除</span>
-            </p>
-          </div>
-          <div class="second">{{questionDetail.content}}</div>
-          <div class="third" :class="{'flex-imgW': imgW == 'true', 'flex-imgH': imgH == 'true'}">
+          <!-- <div
+            class="first"
+            v-if="shareDetail.user"
+          >{{LSuserId == shareDetail.userId?'我':shareDetail.user.userName}}</div> -->
+          <div
+            class="first"
+            v-if="shareDetail.user"
+          >{{shareDetail.user.userName}}</div>
+          <div class="second">{{shareDetail.content}}</div>
+          <div class="third" :class="{'flex-imgW': imgW, 'flex-imgH': imgH}">
             <div
-              @click="previewBtn(questionDetail.pictures,index)"
-              v-for="(imgSrc,index) in questionDetail.pictures"
+              @click="previewBtn(shareDetail.pictures,index)"
+              v-for="(imgSrc,index) in shareDetail.pictures"
               :key="index"
             >
-              <img :src="imgSrc" />
-              <!-- <img v-if="imgW || imgW" :src="imgSrc+'?imageMogr2/thumbnail/!67px'" />
-              <img v-else :src="imgSrc+'?imageMogr2/thumbnail/!75p&imageMogr2/gravity/Center/crop/300x300'">-->
+              <img :src="imgSrc"/>
+              <!-- <img v-if="imgW || imgH" :src="imgSrc+'?imageMogr2/thumbnail/!67px'" />
+              <img v-else :src="imgSrc+'?imageMogr2/thumbnail/!75p&imageMogr2/gravity/Center/crop/300x300'"> -->
             </div>
           </div>
 
-          <div class="fourth">
-            <div class="fourth_time">{{questionDetail.area}}</div>
-            <div class="fourth_message" v-if="showHF == 'true'" @click="messageBtn">回复</div>
-            <!-- <div class="fourth_message" @click="messageBtn">
-              <div>
-                <img src="../../assets/images/message.png">
-              </div>
-              <div>999</div>
+          <div class="fourth" v-if="shareDetail.updatedAt || shareDetail.commentNum">
+            <div class="fourth_time">
+              {{shareDetail.updatedAt}} {{shareDetail.area}}
+              <span
+                v-if="LSuserId == shareDetail.userId"
+                class="delete"
+                @click="setDelShare(shareDetail.shareId)"
+              >删除</span>
             </div>
-            <div class="fourth_praise" @click="praiseBtn">
+            <div class="fourth_message" @click="messageBtn">
               <div>
-                <img src="../../assets/images/praise.png">
+                <img src="../../assets/images/message.png" />
               </div>
-              <div>999</div>
-            </div>-->
+              <div>{{shareDetail.commentNum}}</div>
+            </div>
+            <div
+              class="fourth_praise"
+              @click="praiseBtn(shareDetail.shareId, shareDetail.starState)"
+            >
+              <div>
+                <i class="iconfont icon-dianzan" :class="{'on':shareDetail.starState}"></i>
+              </div>
+              <div>{{shareDetail.stars}}</div>
+            </div>
           </div>
           <!-- 评论 -->
-          <div class="fifth" v-if="messageComment.length">
+          <div class="fifth" v-if="shareComment.length">
             <div class="system-moreCom">
               <div class="moreCom_up"></div>
-              <div class="moreCom_text" v-for="(item,index) in messageComment" :key="index">
+              <div class="moreCom_text" v-for="(item,index) in shareComment" :key="index">
                 <!-- <template > -->
                 <div v-if="!item.parentId" @click="commit(item,index)">
-                  <span>{{item.answerUserName}}：</span>
-                  {{item.answerContent}}
+                  <span>{{item.userName}}：</span>
+                  {{item.comment}}
                 </div>
                 <div v-else @click="commit(item,index)">
-                  <span>{{item.answerUserName}}</span>回复
+                  <span>{{item.userName}}</span>回复
                   <span>{{item.touserName}}：</span>
-                  {{item.answerContent}}
+                  {{item.comment}}
                 </div>
                 <p class="commit-date">{{item.updatedAt}}</p>
                 <!-- </template> -->
@@ -92,6 +103,7 @@
       :placeholder="placeholder"
       :class="{'commitCont':true,'showInput':showInput}"
     ></commit>
+    <div class="commit-shadow" v-show="showInput" @click="myBlur"></div>
     <!-- <div :class="{'shadow':showInput}" v-if="showInput"></div> -->
     <!-- 删除评论 -->
     <div class="delPop" :class="{'on':showDelPop}" @click="showDelPop = false">
@@ -104,7 +116,7 @@
 </template>
 <script>
 import Ls from "@/config/storage";
-import { Toast, MessageBox } from "mint-ui";
+import { MessageBox, Toast } from "mint-ui";
 import { Commit } from "@/mixin/commit";
 import commit from "@/components/commit";
 export default {
@@ -113,53 +125,127 @@ export default {
   components: { commit },
   data() {
     return {
-      showHF: 'false',
       imgW: false,
       imgH: false,
-      questionDetail: {},
-      messageComment: [],
+      LSuserId: "",
+      shareDetail: {},
+      shareComment: [],
       img: [
         "http://www.pptbz.com/pptpic/UploadFiles_6909/201203/2012031220134655.jpg",
         "http://www.pptbz.com/pptpic/UploadFiles_6909/201203/2012031220134655.jpg",
         "http://www.pptbz.com/pptpic/UploadFiles_6909/201203/2012031220134655.jpg"
       ],
+      shareId: "",
+      starState: "",
       defaultHeadImg: 'this.src="'+ require('../../assets/images/default.png') +'"'
     };
   },
   created() {
-    this.imgW = eval(this.$route.query.imgW.toLowerCase());
-    this.imgH = eval(this.$route.query.imgH.toLowerCase());
     // 获取userId
     this.LSuserId = Ls.getItem("userId");
-    this.showHF = Ls.getItem('showHF');
-    this.getQuestionDetail();
+    this.getShareDetail();
     // this.$bridge.callhandler("hiteBtn", { hiteBtn: "true" }, data => {
     //   // vm.ddd = data;
     //   // 处理返回数据
     // });
-    // this.$bridge.callhandler("hiteHead", { hiteBtn: "true" }, data => {
-    //   // vm.ddd = data;
-    //   // 处理返回数据
-    // });
+    this.$bridge.callhandler("hiteHead", { hiteBtn: "true" }, data => {
+      // vm.ddd = data;
+      // 处理返回数据 
+    });
     // 判断是否有操作 0 否 1 是
     Ls.setItem("isInit",'0');
-    this.$bridge.registerhandler("canRefresh", (data, responseCallback) => {
-      console.log("是否刷新"+Ls.getItem("isInit"))
-      responseCallback({ canRefresh: Ls.getItem("isInit") });
-    });
   },
   mounted() {
     // this.myScroll = new this.$BScroll(this.$refs.wrapper, {
     //   click: true
     // });
+    setTimeout(() => {
+      this.imgW = this.$route.query.imgW;
+      this.imgH = this.$route.query.imgH;
+      console.log(this.imgW, this.imgH);
+    }, 400);
   },
   methods: {
-    // 删除我的问答
-    setDelQuestion(id) {
+    myBlur() {
+      this.showInput = false;
+      this.$refs.commit.mBlur();
+    },
+    back() {
+      this.$router.go(-1);
+      console.log("返回");
+    },
+    // 删除评论
+    delCommit() {
+      this.$fetch
+        .setDelComment({
+          commentId: this.commentId
+        })
+        .then(res => {
+          this.shareComment.splice(this.listCommitIndex, 1);
+          this.shareDetail.commentNum -= 1;
+          // Toast({
+          //   message: "已删除"
+          // });
+        })
+        .catch(err => {});
+    },
+    // 传递评论信息
+    commit(item, index) {
+      console.log(item);
+      console.log(index);
+      this.commentId = item.commentId;
+      this.listCommitIndex = index;
+      // 根据评论人id判断是否是自己的评论，是则弹出删除窗口，否则弹出评论框
+      // 试用延时是因为emit传参过程中可能又延时，导致参数在使用的时候还未定义
+      setTimeout(() => {
+        // console.log(this.indexCommit);
+        // let userId = this.$route.query.userId || this.shareDetail.userId;
+        let userId = Ls.getItem("userId");
+        console.log(userId);
+        console.log(item.userId1);
+        if (userId != item.userId1) {
+          this.showInput = true;
+          this.$refs.commit.autoFocus();
+        } else {
+          // this.showInput = false;
+          // this.showDelPop = true;
+          MessageBox.confirm("确定删除吗?", " ").then(action => {
+            this.delCommit();
+          });
+        }
+      }, 20);
+
+      this.placeholder = "回复" + item.userName;
+      this.commitOption.baseId = item.baseId;
+      this.commitOption.touseId = item.userId1;
+      this.commitOption.parentId = 1;
+    },
+    // 提交评论
+    submit(comment) {
+      this.showInput = false;
+      if (comment) {
+        this.commitOption.comment = comment;
+        this.$fetch
+          .setPostComment(this.commitOption)
+          .then(res => {
+            this.$refs.commit.comment = "";
+            setTimeout(() => {
+              this.showInput = false;
+              this.commitOption.comment = "";
+            }, 20);
+            this.getShareDetail();
+            // 判断是否有操作 0 否 1 是
+            Ls.setItem("isInit",'1');
+          })
+          .catch(err => {});
+      }
+    },
+    // 删除我的分享交流
+    setDelShare(shareId) {
       MessageBox.confirm("确定执行此操作?").then(action => {
         this.$fetch
-          .setDelQuestion({
-            questionId: id
+          .setDelShare({
+            shareId: shareId
           })
           .then(res => {
             Toast({
@@ -178,128 +264,75 @@ export default {
           });
       });
     },
-    back() {
-      this.$router.go(-1);
+    // 获取详情
+    getShareDetail() {
+      this.$fetch
+        .getShareDetail({
+          shareId: this.$route.query.id
+        })
+        .then(res => {
+          this.shareDetail = res.data.shareDetail;
+          this.shareComment = res.data.shareDetail.list;
+        })
+        .catch(err => {});
     },
     messageBtn() {
       this.showInput = true;
       this.$refs.commit.autoFocus();
 
       this.placeholder = "评论";
-      this.commitOption.baseId = this.questionDetail.id;
-      this.commitOption.touseId = this.questionDetail.userId;
+      this.commitOption.baseId = this.shareDetail.shareId;
+      this.commitOption.touseId = this.shareDetail.userId;
       this.commitOption.parentId = 0;
+      // // 用于评论时候键盘弹起页面定位
+      // Ls.setItem("elementId","#top")
     },
-    // 删除评论
-    delCommit() {
-      this.$fetch
-        .setDelComment({
-          commentId: this.commentId
-        })
-        .then(res => {
-          this.messageComment.splice(this.listCommitIndex, 1);
-          this.messageComment.commentNum -= 1;
-          // Toast("已删除");
-          // this.init();
-        })
-        .catch(err => {});
-    },
-    // delCommit() {
-    //   this.$fetch
-    //     .setDelComment({
-    //       commentId: this.commentId
-    //     })
-    //     .then(res => {
-    //       this.messageComment.splice(this.listCommitIndex, 1);
-    //       // Toast({
-    //       //   message: "已删除"
-    //       // });
-    //     })
-    //     .catch(err => {});
-    // },
-    // 传递评论信息
-    commit(item, index) {
-      console.log(item);
-      console.log(index);
-      this.commentId = item.answerId;
-      this.listCommitIndex = index;
-      // 根据评论人id判断是否是自己的评论，是则弹出删除窗口，否则弹出评论框
-      // 试用延时是因为emit传参过程中可能又延时，导致参数在使用的时候还未定义
-      setTimeout(() => {
-        // console.log(this.indexCommit);
-        // let userId = this.$route.query.userId || this.questionDetail.userId;
-        let userId = Ls.getItem("userId");
-        this.commitOption.baseId = this.questionDetail.id;
-        console.log(userId);
-        console.log(item.answerUserId1);
-        if (userId != item.answerUserId1) {
-          this.showInput = true;
-          this.$refs.commit.autoFocus();
-        } else {
-          // this.showInput = false;
-          // this.showDelPop = true;
-          MessageBox.confirm("确定删除吗?", " ").then(action => {
-            this.delCommit();
-          });
-        }
-      }, 20);
-
-      this.placeholder = "回复" + item.answerUserName;
-
-      this.commitOption.touseId = item.answerUserId1;
-      this.commitOption.parentId = 1;
-    },
-    // 提交评论
-    submit(comment) {
-      this.showInput = false;
-      if (comment) {
-        this.commitOption.comment = comment;
-        this.commitOption.typeId = 2;
-        this.$fetch
-          .setPostComment(this.commitOption)
-          .then(res => {
-            if(res.data.state == 2){
-              Toast(res.data.error);
-              return false;
-            }
-            this.$refs.commit.comment = "";
-            setTimeout(() => {
-              this.showInput = false;
-              this.commitOption.comment = "";
-            }, 20);
-            this.getQuestionDetail();
-            // 判断是否有操作 0 否 1 是
-            Ls.setItem("isInit",'1');
-          })
-          .catch(err => {
-            // 根据state判断是否是教研员身份,3代表非教研员
-            if (err.data.state == 3) {
-              Toast("非教研员不可以进行此操作哦！");
-            }
-          });
+    praiseBtn(id, state) {
+      console.log("item");
+      this.shareId = id;
+      if (Ls.getItem("userId") == this.shareDetail.userId) {
+        this.$router.push({
+          path: "/teaCircle/zan",
+          query: { id: id, shareType: 3 }
+        });
+        return false;
+      }
+      if (state) {
+        this.starState = -1;
+        this.shareDetail.starState = 0;
+        this.shareDetail.stars -= 1;
+        this.setStar();
+      } else {
+        this.starState = 1;
+        this.shareDetail.starState = 1;
+        this.shareDetail.stars += 1;
+        this.setStar();
       }
     },
-    getQuestionDetail() {
+    setStar() {
       this.$fetch
-        .getQuestionDetail({
-          questionId: this.$route.query.id
+        .setStar({
+          shareId: this.shareId,
+          starState: this.starState,
+          shareType: 3
         })
-        .then(res => {
-          this.questionDetail = res.data.questionDetail;
-          this.messageComment = res.data.messageComment;
-          console.log(this.questionDetail.user.userName);
-        })
+        .then(res => {})
         .catch(err => {});
-    },
-    praiseBtn() {
-      console.log("item");
+      // 判断是否有操作 0 否 1 是
+      Ls.setItem("isInit",'1');
     },
     previewBtn(item, index) {
+      // Ls.setItem("list",item)
+      // Ls.setItem("index",index)
       this.$store.commit("changePre");
       this.$store.commit("changeIndex", index);
       this.$store.commit("changeList", item);
     }
   }
+  // destroyed() {
+  //   Ls.removeItem("list");
+  //   Ls.removeItem("index");
+  // },
 };
 </script> 
 <style scoped lang='less'>
@@ -308,7 +341,7 @@ export default {
   div {
     height: 5.26rem !important;
     width: 11.12rem !important;
-    img {
+    img{
       width: 100% !important;
       height: 100%;
     }
@@ -319,7 +352,7 @@ export default {
   div {
     width: 5.26rem !important;
     height: 11.12rem !important;
-    img {
+    img{
       width: 100% !important;
       height: 100%;
     }
@@ -355,6 +388,10 @@ export default {
     font-size: 26px;
     color: #31445a;
   }
+}
+.commit-date {
+  font-size: 12px;
+  color: #c1c1c1;
 }
 .delPop {
   width: 100%;
@@ -433,7 +470,7 @@ export default {
   padding: 1.25rem 15px;
   box-sizing: border-box;
   display: flex;
-  // margin-top: 50px;
+  margin-top: 50px;
   // border-bottom: 1px solid #e1e4e9;
   .communion_box_left {
     & > div {
@@ -453,19 +490,9 @@ export default {
     margin-left: 0.3125rem;
 
     .first {
+      margin-bottom: 0.625rem;
       font-size: 1rem;
       color: #0081ff;
-      p {
-        margin: 10px 0 12px 0;
-      }
-      .my-delete {
-        font-size: 12px;
-        color: #88c750;
-      }
-      .time {
-        font-size: 12px;
-        color: #c1c1c1;
-      }
     }
     .second {
       width: 100%;
@@ -497,18 +524,29 @@ export default {
     }
 
     .fourth {
-      // height: 2.8125rem;
-      // line-height: 2.8125rem;
+      height: 2.8125rem;
+      line-height: 2.8125rem;
       overflow: hidden;
       color: #c1c1c1;
       .fourth_time {
         float: left;
         font-size: 0.75rem;
+        .delete {
+          color: #88c750;
+          margin-left: 0.625rem;
+        }
       }
       .fourth_praise {
         float: right;
         font-size: 0.75rem;
         margin-right: 1.9875rem;
+        .iconfont {
+          font-size: 20px;
+          color: #c1c1c1;
+          &.on {
+            color: #db2809;
+          }
+        }
         img {
           height: 1.125rem;
           width: 1.125rem;
@@ -522,7 +560,6 @@ export default {
       .fourth_message {
         float: right;
         font-size: 0.75rem;
-        color: #0081ff;
 
         img {
           width: 1.125rem;
@@ -543,7 +580,6 @@ export default {
   position: relative;
   border-radius: 0.15625rem;
   padding: 0.625rem;
-  margin-top: 10px;
   .moreCom_up {
     position: absolute;
     top: -0.625rem;

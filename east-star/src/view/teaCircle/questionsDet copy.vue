@@ -1,12 +1,12 @@
 <template>
   <div class="system-layout" ref="wrapper">
-    <!-- <div class="top" id="top">
+    <div class="top" id="top">
       <i class="iconfont icon-fanhui" @click="back"></i>
       问答详情
       <span class="share">
         <i class="iconfont icon-gengduo"></i>
       </span>
-    </div> -->
+    </div>
     <div class="content">
       <div class="system-communion_box" v-if="questionDetail.id">
         <div class="communion_box_left">
@@ -32,7 +32,7 @@
             </p>
           </div>
           <div class="second">{{questionDetail.content}}</div>
-          <div class="third" :class="{'flex-imgW': imgW == 'true', 'flex-imgH': imgH == 'true'}">
+          <div class="third" :class="{'flex-imgW': imgW, 'flex-imgH': imgH}">
             <div
               @click="previewBtn(questionDetail.pictures,index)"
               v-for="(imgSrc,index) in questionDetail.pictures"
@@ -127,8 +127,9 @@ export default {
     };
   },
   created() {
-    this.imgW = eval(this.$route.query.imgW.toLowerCase());
-    this.imgH = eval(this.$route.query.imgH.toLowerCase());
+    this.imgW = this.$route.query.imgW;
+    this.imgH = this.$route.query.imgH;
+    console.log(this.imgW, this.imgH);
     // 获取userId
     this.LSuserId = Ls.getItem("userId");
     this.showHF = Ls.getItem('showHF');
@@ -137,16 +138,12 @@ export default {
     //   // vm.ddd = data;
     //   // 处理返回数据
     // });
-    // this.$bridge.callhandler("hiteHead", { hiteBtn: "true" }, data => {
-    //   // vm.ddd = data;
-    //   // 处理返回数据
-    // });
+    this.$bridge.callhandler("hiteHead", { hiteBtn: "true" }, data => {
+      // vm.ddd = data;
+      // 处理返回数据
+    });
     // 判断是否有操作 0 否 1 是
     Ls.setItem("isInit",'0');
-    this.$bridge.registerhandler("canRefresh", (data, responseCallback) => {
-      console.log("是否刷新"+Ls.getItem("isInit"))
-      responseCallback({ canRefresh: Ls.getItem("isInit") });
-    });
   },
   mounted() {
     // this.myScroll = new this.$BScroll(this.$refs.wrapper, {
@@ -258,10 +255,6 @@ export default {
         this.$fetch
           .setPostComment(this.commitOption)
           .then(res => {
-            if(res.data.state == 2){
-              Toast(res.data.error);
-              return false;
-            }
             this.$refs.commit.comment = "";
             setTimeout(() => {
               this.showInput = false;
@@ -433,7 +426,7 @@ export default {
   padding: 1.25rem 15px;
   box-sizing: border-box;
   display: flex;
-  // margin-top: 50px;
+  margin-top: 50px;
   // border-bottom: 1px solid #e1e4e9;
   .communion_box_left {
     & > div {

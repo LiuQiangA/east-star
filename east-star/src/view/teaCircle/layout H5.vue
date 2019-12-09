@@ -3,17 +3,9 @@
 
     <div class='top' id="top" v-if="$route.meta.tab">
       <div class="border-bottom">
-        <!-- <div :class='["list", item.fal ? "list_active": ""]' v-for='(item, index) in tab_data' @click='tab(index)' :key="item.name">
-          {{item.text}}
-          <div class='img'></div>
-        </div> -->
         <router-link class="list" to="/teaCircle/consult" @click.native='tab(0)'><span>教研资讯</span> <div class='img'></div></router-link>
         <router-link class="list" to="/teaCircle/communion?share=1" @click.native='tab(1)'><span>分享交流</span> <div class='img'></div></router-link>
         <router-link class="list" to="/teaCircle/questions?quest=1" @click.native='tab(2)'><span>教研问答</span> <div class='img'></div></router-link>
-        <!-- <div :class='["list", item.fal ? "list_active": ""]' v-for='(item, index) in tab_data' @click='tab(index)' :key="item.name">
-          {{item.text}}
-          <div class='img'></div>
-        </div> -->
       </div>
     </div>
 
