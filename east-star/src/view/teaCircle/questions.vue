@@ -144,7 +144,7 @@ export default {
       // vm.ddd = data;
       // 处理返回数据
     });
-    this.initScroll();
+    // this.initScroll();
     // this.getQuestionList();
   },
   beforeRouteEnter(to, from, next) {
@@ -557,7 +557,7 @@ export default {
               this.finishPulling();
               // this.initScroll();
             }, 1500);
-            // this.initScroll();
+            this.initScroll();
           });
           // this.isLogin = true;
           // this.newList2 = res.data.newList;

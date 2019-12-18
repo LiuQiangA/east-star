@@ -42,9 +42,12 @@ import {
 Vue.use(PullRefresh).use(List)
 
 // 移动端控制台调试
-// import Vconsole from 'vconsole';
-// const vConsole = new Vconsole();
-// export default vConsole;
+import Vconsole from 'vconsole';
+if (process.env.NODE_ENV != "production"){
+  var vConsole = new Vconsole();
+}
+export default vConsole;
+
 
 Vue.config.productionTip = false
 

@@ -234,6 +234,20 @@ export default {
     praiseBtn(id, state) {
       console.log("item");
       this.shareId = id;
+      if (Ls.getItem("userId") == this.shareDetail.userId) {
+        let shareId = id+'';
+        console.log(shareId);
+        console.log(typeof shareId);
+        this.$bridge.callhandler("zanList", { id: shareId, shareType: '3' }, data => {
+          // vm.ddd = data;
+          // 处理返回数据
+        });
+        // this.$router.push({
+        //   path: "/teaCircle/zan",
+        //   query: { id: id, shareType: 3 }
+        // });
+        return false;
+      }
       if (state) {
         this.starState = -1;
         this.shareDetail.starState = 0;

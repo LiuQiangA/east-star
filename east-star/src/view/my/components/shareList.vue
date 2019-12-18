@@ -152,10 +152,20 @@ export default {
         // 处理返回数据
       });
       if (Ls.getItem("userId") == item.userId) {
-        this.$router.push({
-          path: "/zan",
-          query: { id: item.shareId, shareType: this.type }
+        let shareId = item.shareId+'';
+        let shareType = this.type+'';
+        console.log(shareId);
+        console.log(shareType);
+        console.log(typeof shareId);
+        console.log(typeof shareType);
+        this.$bridge.callhandler("zanList", { id: shareId, shareType: shareType }, data => {
+          // vm.ddd = data;
+          // 处理返回数据
         });
+        // this.$router.push({
+        //   path: "/zan",
+        //   query: { id: item.shareId, shareType: this.type }
+        // });
         return false;
       }
       this.$emit("praise", item.shareId, item.starState);
@@ -177,11 +187,12 @@ export default {
       this.$store.commit("changeList", imgSrc.pictures);
     },
     goDet(id) {
-      let idString = String(id);
-      console.log(idString);
+      id += '';
+      // let idString = String(id);
+      // console.log(idString);
       this.$bridge.callhandler(
         "goDet",
-        { id: idString },
+        { id: id },
         data => {
           // vm.ddd = data;
 

@@ -149,19 +149,29 @@ export default {
       this.$emit("deleteShare", item, index);
     },
     zanList(item, type) {
-      this.$router.push({
-        path: "/teaCircle/zan",
-        query: { id: item.shareId, shareType: type }
+      let shareId = item.shareId+'';
+      let shareType = type+'';
+      console.log(shareId);
+      console.log(shareType);
+      console.log(typeof shareId);
+      console.log(typeof shareType);
+      this.$bridge.callhandler("zanList", { id: shareId, shareType: shareType }, data => {
+        // vm.ddd = data;
+        // 处理返回数据
       });
+      // this.$router.push({
+      //   path: "/teaCircle/zan",
+      //   query: { id: item.shareId, shareType: type }
+      // });
     },
     getId(id) {
       return "my" + id;
     },
     goDet(id, imgW, imgH) {
       id += '';
-      let w = imgW ? '"true"':'"false"';
-      let h = imgH ? '"true"':'"false"';
-      this.$bridge.callhandler("communionDet", {id: id, imgW: w, imgH: h}, data => {
+      // let w = imgW ? '"true"':'"false"';
+      // let h = imgH ? '"true"':'"false"';
+      this.$bridge.callhandler("communionDet", {id: id, imgW: imgW, imgH: imgH}, data => {
         // vm.ddd = data;
         // 处理返回数据
       });

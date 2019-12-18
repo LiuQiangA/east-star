@@ -120,7 +120,7 @@ export default {
       // vm.ddd = data;
       // 处理返回数据
     });
-    this.initScroll();
+    // this.initScroll();
   },
   beforeRouteEnter(to, from, next) {
     next(vm => {
@@ -216,49 +216,6 @@ export default {
       });
     },
     // init
-    initLogin() {
-      this.option.pageNo = 1;
-      this.$fetch
-        .getShareList(this.option)
-        .then(res => {
-          if(!res.data.newList.length){
-            this.empty = true;
-          }
-          this.$nextTick(() => {
-            res.data.newList.forEach((item, index, arr) => {
-              let img = new Image();
-              // 后台图片的src
-              img.src = item.pictures[0];
-              if (item.pictures.length == 1) {
-                img.onload = function() {
-                  if (img.width > img.height) {
-                    arr[index].imgW = true;
-                    arr[index].imgH = false;
-                  } else {
-                    arr[index].imgW = false;
-                    arr[index].imgH = true;
-                  }
-                  arr[index].b = 1;
-                };
-              } else {
-                arr[index].a = 1;
-              }
-            });
-            setTimeout(() => {
-              this.newList = res.data.newList;
-              this.total = res.data.total;
-              this.totalPage = this.total / 10;
-              this.finishPulling();
-            }, 1500);
-            this.initScroll();
-          });
-        })
-        .catch(err => {
-          if (err.response.state == "False") {
-            this.isLogin = false;
-          }
-        });
-    },
     init() {
       this.option.pageNo = 1;
       this.$fetch
@@ -293,6 +250,7 @@ export default {
               this.totalPage = this.total / 10;
               this.finishPulling();
             }, 1500);
+            this.initScroll();
           });
         })
         .catch(err => {

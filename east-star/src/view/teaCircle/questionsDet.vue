@@ -127,8 +127,8 @@ export default {
     };
   },
   created() {
-    this.imgW = eval(this.$route.query.imgW.toLowerCase());
-    this.imgH = eval(this.$route.query.imgH.toLowerCase());
+    console.log(this.$route.query.imgW)
+    console.log(this.$route.query.imgH)
     // 获取userId
     this.LSuserId = Ls.getItem("userId");
     this.showHF = Ls.getItem('showHF');
@@ -152,6 +152,10 @@ export default {
     // this.myScroll = new this.$BScroll(this.$refs.wrapper, {
     //   click: true
     // });
+    this.imgW = this.$route.query.imgW;
+    this.imgH = this.$route.query.imgH;
+    // this.imgW = eval(this.$route.query.imgW.toLowerCase());
+    // this.imgH = eval(this.$route.query.imgH.toLowerCase());
   },
   methods: {
     // 删除我的问答

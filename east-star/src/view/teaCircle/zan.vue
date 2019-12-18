@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="top">
+    <!-- <div class="top">
       <i class="iconfont icon-fanhui" @click="back"></i>
       点赞列表
       <span class="share">
         <i class="iconfont icon-gengduo"></i>
       </span>
-    </div>
+    </div> -->
     <div v-if="!empty">
       <ul class="zan-ul">
         <li class="zan-item" v-for="item in user" :key="item.id">

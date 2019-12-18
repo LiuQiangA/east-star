@@ -155,10 +155,17 @@ export default {
         // 处理返回数据
       });
       if (Ls.getItem("userId") == item.userId) {
-        this.$router.push({
-          path: "/zan",
-          query: { id: item.shareId, shareType: 5 }
+        let shareId = item.shareId+'';
+        console.log(shareId);
+        console.log(typeof shareId);
+        this.$bridge.callhandler("zanList", { id: shareId, shareType: '5' }, data => {
+          // vm.ddd = data;
+          // 处理返回数据
         });
+        // this.$router.push({
+        //   path: "/zan",
+        //   query: { id: item.shareId, shareType: 5 }
+        // });
         return false;
       }
       this.$emit("praise", item.shareId, item.starState);

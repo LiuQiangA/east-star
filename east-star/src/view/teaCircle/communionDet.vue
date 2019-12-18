@@ -160,12 +160,16 @@ export default {
     });
   },
   mounted() {
+    console.log(this.$route.query.imgW)
+    console.log(this.$route.query.imgH)
     // this.myScroll = new this.$BScroll(this.$refs.wrapper, {
     //   click: true
     // });
     setTimeout(() => {
-      this.imgW = eval(this.$route.query.imgW.toLowerCase());
-      this.imgH = eval(this.$route.query.imgH.toLowerCase());
+      this.imgW = this.$route.query.imgW;
+      this.imgH = this.$route.query.imgH;
+      // this.imgW = eval(this.$route.query.imgW.toLowerCase());
+      // this.imgH = eval(this.$route.query.imgH.toLowerCase());
     }, 400);
   },
   methods: {
@@ -294,10 +298,17 @@ export default {
       console.log("item");
       this.shareId = id;
       if (Ls.getItem("userId") == this.shareDetail.userId) {
-        this.$router.push({
-          path: "/teaCircle/zan",
-          query: { id: id, shareType: 3 }
+        let shareId = id+'';
+        console.log(shareId);
+        console.log(typeof shareId);
+        this.$bridge.callhandler("zanList", { id: shareId, shareType: '3' }, data => {
+          // vm.ddd = data;
+          // 处理返回数据
         });
+        // this.$router.push({
+        //   path: "/teaCircle/zan",
+        //   query: { id: id, shareType: 3 }
+        // });
         return false;
       }
       if (state) {
