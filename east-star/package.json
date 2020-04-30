@@ -14,7 +14,7 @@
         "babel-polyfill": "^6.26.0",
         "better-scroll": "^1.15.0",
         "es6-promise": "^4.2.8",
-        "jquery": "^3.4.1",
+        "jquery": "^3.5.0",
         "md5": "^2.2.1",
         "mint-ui": "^2.2.13",
         "sha1": "^1.1.1",
